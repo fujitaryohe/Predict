@@ -139,19 +139,28 @@ def st_display_dtree(clf, features):
     なし
     """
 
+    # 必要なライブラリのインポート    
+    from sklearn.tree import plot_tree
+
     # 可視化する決定木の生成
-    dot = tree.export_graphviz(clf, 
-        out_file=None,  # ファイルは介さずにGraphvizにdot言語データを渡すのでNone
-        filled=True,    # Trueにすると、分岐の際にどちらのノードに多く分類されたのか色で示してくれる
-        rounded=True,   # Trueにすると、ノードの角を丸く描画する。
-    #    feature_names=['あ', 'い', 'う', 'え'], # これを指定しないとチャート上で特徴量の名前が表示されない
-        feature_names=features, # これを指定しないとチャート上で説明変数の名前が表示されない
-    #    class_names=['setosa' 'versicolor' 'virginica'], # これを指定しないとチャート上で分類名が表示されない
-        special_characters=True # 特殊文字を扱えるようにする
-        )
+    plot_tree(clf, feature_names=features, class_names=True, filled=True)
 
     # Streamlitで決定木を表示する
-    st.graphviz_chart(dot)
+    st.pyplot(plt)
+
+    # # 可視化する決定木の生成
+    # dot = tree.export_graphviz(clf, 
+    #     # out_file=None,  # ファイルは介さずにGraphvizにdot言語データを渡すのでNone
+    #     # filled=True,    # Trueにすると、分岐の際にどちらのノードに多く分類されたのか色で示してくれる
+    #     # rounded=True,   # Trueにすると、ノードの角を丸く描画する。
+    # #    feature_names=['あ', 'い', 'う', 'え'], # これを指定しないとチャート上で特徴量の名前が表示されない
+    #     # feature_names=features, # これを指定しないとチャート上で説明変数の名前が表示されない
+    # #    class_names=['setosa' 'versicolor' 'virginica'], # これを指定しないとチャート上で分類名が表示されない
+    #     # special_characters=True # 特殊文字を扱えるようにする
+    #     )
+
+    # # Streamlitで決定木を表示する
+    # st.graphviz_chart(dot)
 
 
 def main():
@@ -217,16 +226,19 @@ def main():
 
     if choice == 'グラフ表示':
 
+        activities = ["退職", "年齢", "出張頻度", "通勤距離"]
+        choice = st.sidebar.selectbox("Select Activity", activities)
+
         # セッションステートにデータフレームがあるかを確認
         if 'df' in st.session_state:
 
             # セッションステートに退避していたデータフレームを復元
             df = copy.deepcopy(st.session_state.df)
 
-            # グラフの表示
-            st_display_graph(df, "退職")
+                # グラフの表示
+            st_display_graph(df, choice)
 
-            
+
         else:
             st.subheader('訓練用データをアップロードしてください')
 
@@ -246,9 +258,13 @@ def main():
             clf, train_pred, train_scores = ml_dtree(train_X, train_Y, 2)
 
             # 正解率を出力
-            st.write("正解率：",train_scores)
+            st.caption('正解率の可視化')
+            st.subheader(f"正解率：{train_scores}")
             # 決定木のツリーを出力
-            # 決定木の可視化
+            st.caption('')
+            st.caption('決定木の可視化')
+            st_display_dtree(clf, train_pred)
+            
             
             
         else:
